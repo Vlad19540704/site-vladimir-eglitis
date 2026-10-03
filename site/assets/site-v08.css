@@ -22,5 +22,6 @@ h1,h2,h3,.brand,.footer-name{font-family:Georgia,"Times New Roman",serif;font-we
 .readable{width:min(770px,calc(100% - 44px))}
 .price-list{width:min(840px,calc(100% - 44px))}
 .nav a:focus-visible,.pill:focus-visible,.text-link:focus-visible{outline:3px solid #d7a25d;outline-offset:4px}
+.contact-actions .contact-secondary{color:#47331f;min-height:44px;display:inline-flex;align-items:center;margin-top:0;width:auto;padding:4px 8px}
 @media(max-width:920px){.nav{gap:0}.nav>a{min-height:48px;padding:8px 0}}
 @media(max-width:660px){h1{font-size:clamp(39px,11vw,50px)}.hero,.hero-wrap{min-height:560px}.section{padding:49px 0}.readable,.price-list{width:calc(100% - 34px)}.price-row{grid-template-columns:1fr;gap:4px}.price-row .amount{font-size:22px}.article-grid img{height:170px}.footer-grid{gap:20px}}

@@ -9,6 +9,10 @@ from bs4 import BeautifulSoup
 
 SITE = Path(__file__).resolve().parents[1] / 'site'
 PAGES = sorted(SITE.glob('*.html')) + sorted((SITE / 'articles').glob('*.html'))
+WHATSAPP = 'https://wa.me/358466170891'
+EMAIL = 'mailto:eglvlad2025@outlook.com'
+MAX = 'https://max.ru/u/f9LHodD0cOJ57eetEyicu--mDK2NszjKeeEYBEHcl7uGccaQ9irTHc0Jg6k'
+TELEGRAM = 'https://t.me/+358466170891'
 
 for path in PAGES:
     article = path.parent.name == 'articles'
@@ -47,6 +51,15 @@ for path in PAGES:
         a.string = label
         links.append(a)
     footer.append(links)
+    channels = soup.new_tag('div', attrs={'class': 'footer-links'})
+    for label, href in [('WhatsApp', WHATSAPP), ('Email', EMAIL), ('MAX', MAX), ('Telegram', TELEGRAM)]:
+        a = soup.new_tag('a', href=href)
+        a.string = label
+        if href.startswith('https://'):
+            a['target'] = '_blank'
+            a['rel'] = 'noopener noreferrer'
+        channels.append(a)
+    footer.append(channels)
     copyright_line = soup.select_one('.footer-bottom span')
     if copyright_line:
         copyright_line.string = '© 2026 Владимир Эглитис · Предпубликационная версия'
@@ -55,7 +68,10 @@ for path in PAGES:
         for old in soup.select('script[type="application/ld+json"]'):
             old.decompose()
         for target in soup.select('.contact-band a'):
-            target.string = 'Как связаться →'
+            target.string = 'Написать в WhatsApp →'
+            target['href'] = WHATSAPP
+            target['target'] = '_blank'
+            target['rel'] = 'noopener noreferrer'
         title = soup.select_one('h1').get_text(' ', strip=True)
         meta = soup.select_one('meta[name="description"]')
         data = {
@@ -71,13 +87,24 @@ for path in PAGES:
             soup.title.string = 'Как понять, что алкоголь стал проблемой? — Владимир Эглитис'
 
     if path.name == 'index.html':
+        if not soup.select_one('.hero-channels'):
+            channels = soup.new_tag('div', attrs={'class': 'hero-channels'})
+            soup.select_one('.main-cta').insert_after(channels)
         for node in soup.select('.hero-channels'):
-            node.decompose()
+            node.clear()
+            a = soup.new_tag('a', href=EMAIL)
+            a.string = 'Или написать по email →'
+            node.append(a)
         for node in soup.select('.contact-actions'):
             node.clear()
-            p = soup.new_tag('p')
-            p.string = 'Проверенные способы связи появятся здесь после подтверждения.'
-            node.append(p)
+            for label, href in [('WhatsApp', WHATSAPP), ('Email', EMAIL), ('MAX', MAX), ('Telegram', TELEGRAM)]:
+                a = soup.new_tag('a', href=href)
+                a.string = label + ' ↗'
+                a['class'] = 'pill brown-pill' if label in ('WhatsApp', 'Email') else 'text-link contact-secondary'
+                if href.startswith('https://'):
+                    a['target'] = '_blank'
+                    a['rel'] = 'noopener noreferrer'
+                node.append(a)
         for node in soup.select('.payment-line'):
             node.clear()
             strong = soup.new_tag('strong')
@@ -87,7 +114,10 @@ for path in PAGES:
             node.append('Стоимость для России — в рублях. Оплата через Сбер.')
         for node in soup.select('.main-cta'):
             node.clear()
-            node.string = 'Как связаться →'
+            node.string = 'Написать в WhatsApp →'
+            node['href'] = WHATSAPP
+            node['target'] = '_blank'
+            node['rel'] = 'noopener noreferrer'
         for node in soup.select('.portrait-placeholder'):
             node.clear()
             node.string = 'Место для фотографии Владимира'
@@ -97,7 +127,7 @@ for path in PAGES:
     if path.name == 'contact.html':
         main = soup.select_one('main')
         main.clear()
-        fragment = BeautifulSoup('''<section class="inner-hero"><div class="wrap"><p class="kicker">Контакты</p><h1>Связаться с Владимиром</h1><p>Для записи достаточно короткого сообщения. Не нужно заранее описывать всю историю.</p></div></section><section class="content-panel"><div class="readable"><h2>Способы связи уточняются</h2><p>Прямые ссылки и адрес для записи будут размещены после подтверждения владельцем. Предпубликационная версия пока не принимает сообщения.</p><p>Для клиентов из России стоимость в рублях, оплата через Сбер. Полный прайс — на <a href="prices.html">странице стоимости</a>.</p><h2>Если сейчас нужна медицинская помощь</h2><p>При судорогах, галлюцинациях, выраженной спутанности или тяжёлой абстиненции обратитесь в местную службу экстренной медицинской помощи. Консультирование не заменяет медицинскую помощь.</p></div></section>''', 'html.parser')
+        fragment = BeautifulSoup(f'''<section class="inner-hero"><div class="wrap"><p class="kicker">Контакты</p><h1>Связаться с Владимиром</h1><p>Для записи достаточно короткого сообщения. Не нужно заранее описывать всю историю.</p></div></section><section class="content-panel"><div class="readable"><h2>Написать Владимиру</h2><p>Начните с удобного способа связи. Медицинские подробности не нужно отправлять в первом сообщении.</p><div class="channel-list"><a href="{WHATSAPP}" target="_blank" rel="noopener noreferrer"><strong>WhatsApp ↗</strong><small>+358 46 617 08 91</small></a><a href="{EMAIL}"><strong>Email ↗</strong><small>eglvlad2025@outlook.com</small></a><a href="{MAX}" target="_blank" rel="noopener noreferrer"><strong>MAX ↗</strong><small>+7 981 188 15 62</small></a><a href="{TELEGRAM}" target="_blank" rel="noopener noreferrer"><strong>Telegram ↗</strong><small>+358 46 617 08 91</small></a></div><p>Ознакомительная консультация бесплатна. Для клиентов из России стоимость в рублях, оплата через Сбер. Полный прайс — на <a href="prices.html">странице стоимости</a>.</p><h2>Если сейчас нужна медицинская помощь</h2><p>При судорогах, галлюцинациях, выраженной спутанности или тяжёлой абстиненции обратитесь в местную службу экстренной медицинской помощи. Консультирование не заменяет медицинскую помощь.</p></div></section>''', 'html.parser')
         for child in list(fragment.contents):
             main.append(child)
 

@@ -10,6 +10,12 @@ ROOT = Path(__file__).resolve().parents[1]
 SITE = ROOT / 'site'
 PAGES = sorted(SITE.glob('*.html')) + sorted((SITE / 'articles').glob('*.html'))
 BASELINE = '68a8d59'
+CONTACT_URLS = {
+    'https://wa.me/358466170891',
+    'mailto:eglvlad2025@outlook.com',
+    'https://max.ru/u/f9LHodD0cOJ57eetEyicu--mDK2NszjKeeEYBEHcl7uGccaQ9irTHc0Jg6k',
+    'https://t.me/+358466170891',
+}
 errors = []
 
 def check(ok, message):
@@ -29,7 +35,9 @@ for path in PAGES:
         check(href not in ('#', '') and not href.startswith('javascript:'), f'{rel}: false href {href}')
         parsed = urlparse(href)
         if parsed.scheme in ('http', 'https', 'mailto'):
-            check(False, f'{rel}: external contact needs confirmation: {href}')
+            check(href in CONTACT_URLS, f'{rel}: unexpected external link: {href}')
+            if parsed.scheme == 'https':
+                check(a.get('rel') == ['noopener', 'noreferrer'] and a.get('target') == '_blank', f'{rel}: unsafe external link: {href}')
         elif not parsed.scheme and parsed.path:
             target = (path.parent / unquote(parsed.path)).resolve()
             check(target.is_file() and SITE in target.parents, f'{rel}: broken link {href}')
@@ -73,8 +81,10 @@ with sync_playwright() as p:
             page.keyboard.press('Escape')
             check(not page.locator('#main-nav').is_visible(), f'{width}: menu did not close with Escape')
             check(page.get_by_role('button', name='Открыть меню').evaluate('(el) => document.activeElement === el'), f'{width}: focus not restored')
-        page.get_by_role('link', name='Как связаться').first.click()
+        check(page.locator('.main-cta').get_attribute('href') == 'https://wa.me/358466170891', f'{width}: primary CTA is not WhatsApp')
+        page.get_by_role('link', name='Контакты').first.click()
         check(page.url.endswith('/contact.html'), f'{width}: CTA did not reach contacts')
+        check(page.locator('main a[href="mailto:eglvlad2025@outlook.com"]').count() == 1, f'{width}: email missing from contacts')
         page.close()
     browser.close()
 
