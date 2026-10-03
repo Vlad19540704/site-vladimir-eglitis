@@ -1,0 +1,17 @@
+# Проверка поставщиков — 3 октября 2026
+
+## VPS
+
+[VDSina Standard](https://www.vdsina.com/ru/pricing/standard): 1 CPU / 1 GB RAM / 10 GB NVMe, 1 TB трафика за календарный месяц, $0.07 в день ($2.10 за 30 дней), превышение $2.25 за 1 TB. Это подходящий размер для статического сайта без CMS. На странице предлагается чистая Ubuntu 24.04. [Минимальная сумма на балансе](https://www.vdsina.com/ru/plans-min-costs) для тарифа не указана. [Оплата](https://www.vdsina.com/ru/qa/q/kak-proizvoditsya-oplata-vds-servera) списывается с баланса автоматически; [автопродление](https://www.vdsina.com/ru/qa/q/posutochnoe-ispolzovanie) управляется отдельно. Автопополнение карты настраивается отдельно, после первого платежа: [справка VDSina](https://www.vdsina.com/ru/qa/q/nastroyka-avtomaticheskogo-popolneniya-balansa). Для российской банковской карты поддержка указывает минимальное пополнение $50: [ответ VDSina](https://www.vdsina.com/ru/qa/q/kak-proizvoditsya-oplata-vds-servera). Итоговую сумму и способ оплаты надо подтвердить в корзине аккаунта до списания.
+
+## Домены
+
+В публичном Verisign RDAP на дату проверки запросы `vladimireglitis.com`, `eglitisonline.com`, `eglitiskonsult.com` ответили HTTP 404 (нет записи о зарегистрированном домене). Это предварительный признак доступности, финальную доступность и отсутствие premium-цены проверяем в корзине регистратора непосредственно перед оплатой.
+
+[Namecheap .com](https://www.namecheap.com/domains/registration/gtld/com/): публичная цена регистрации на год $11.28, продление $18.48/год, ICANN fee $0.20 может добавляться при покупке/продлении. [Автопродление можно включить или отключить в корзине](https://www.namecheap.com/support/knowledgebase/article.aspx/10072/35/how-to-register-a-domain-name/). Без допуслуг.
+
+[REG.RU .ru](https://www.reg.ru/domain/new/RU): рекламируемая регистрация от 169 ₽/год; цена продления зависит от аккаунта. С 1 сентября 2026 для регистрации/продления .ru/.рф/.su требуется идентификация администратора через Госуслуги: [инструкция REG.RU](https://help.reg.ru/support/lichnyy-kabinet/registratsiya-i-kontaktnyye-dannyye/kak-projti-identifikaciyu-administratoram-domenov-ru-i-rf). Поэтому .com — более простой технический старт, если Владимир не хочет проходить идентификацию .ru. Текущая доступность .ru имён не подтверждена.
+
+## Jivo
+
+[Тариф «Начальная»](https://www.jivo.ru/pricing/) — 0 ₽, сайт-чат и заявленные каналы MAX/Telegram; WhatsApp Business оплачивается отдельно. Бесплатная версия хранит историю переписки 2 месяца по таблице тарифов. [Документы Jivo](https://www.jivo.ru/terms/) и [описание безопасности](https://www.jivo.ru/security/) опубликованы, но проектная политика обработки потенциально чувствительных данных ещё не согласована. Виджет не включён; подключать только после отдельного разрешения и утверждения правового режима. ИИ-оператор не нужен.

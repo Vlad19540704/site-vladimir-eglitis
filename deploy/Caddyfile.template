@@ -1,0 +1,21 @@
+# Replace SITE_DOMAIN only after the domain is owned and points to this new VPS.
+SITE_DOMAIN {
+    root * /srv/site/current
+    encode zstd gzip
+    header {
+        X-Content-Type-Options nosniff
+        Referrer-Policy strict-origin-when-cross-origin
+        X-Frame-Options DENY
+        -Server
+    }
+    @hidden path /.git/* /.env* /deploy/* /scripts/*
+    respond @hidden 404
+    file_server
+    log {
+        output file /var/log/caddy/site-access.log {
+            roll_size 10MiB
+            roll_keep 5
+        }
+        format json
+    }
+}
