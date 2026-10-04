@@ -333,3 +333,20 @@ body{font-size:19px;line-height:1.62}
   .method-grid h3{font-size:27px}
   .approach-faq summary{font-size:23px}
 }
+
+/* Approved real-person portrait and aligned contact sections. */
+.portrait-photo{display:block;width:100%;object-fit:cover;object-position:center 28%;border-radius:10px}
+.about-section .portrait-photo{height:345px;object-position:center top}
+.about-story .portrait-photo{height:410px}
+.contact-page h2{font-size:clamp(33px,3vw,44px)}
+.contact-page>p,.medical-copy p{max-width:800px;font-size:19px;line-height:1.6}
+.contact-page .contact-email{font-size:18px}
+.primary-channels a{display:flex;flex-direction:row;align-items:center;justify-content:flex-start;gap:16px;min-height:104px}
+.primary-channels .messenger-icon{flex:none;align-self:center;width:31px;height:31px}
+.primary-channels strong{font-size:27px}
+@media(max-width:660px){
+  .about-section .portrait-photo{height:270px}
+  .about-story .portrait-photo{height:340px}
+  .contact-page>p,.medical-copy p{font-size:18px}
+  .primary-channels a{min-height:84px}
+}

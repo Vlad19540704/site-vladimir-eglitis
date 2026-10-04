@@ -74,16 +74,21 @@ check({a['href'] for a in home.select('.hero-direct a')} == primary, 'home: prim
 check({a['href'] for a in contact.select('.primary-channels a')} == primary, 'contact: primary messengers differ')
 check(home.select_one('.hero h1').get_text(' ', strip=True) == 'Есть место, где можно говорить честно.', 'home: approved hero headline changed')
 check(len(home.select('.article-grid article')) == 2, 'home: wrong article count')
-check(home.select_one('.portrait-placeholder') is not None, 'home: neutral portrait place missing')
+check(home.select_one('.about-section img.portrait-photo[src="assets/portrait-v1.png"]') is not None, 'home: approved portrait missing')
 check(not home.select_one('.hero-more, .about-quote'), 'home: removed links or quote returned')
+check('Для клиентов из России стоимость указана в рублях. Оплата через Сбер.' not in home.get_text(' ', strip=True), 'home: removed price sentence returned')
 check(len(BeautifulSoup((SITE / 'articles.html').read_text(encoding='utf-8'), 'html.parser').select('.article-list img')) == 2, 'articles: card covers missing')
 prices = BeautifulSoup((SITE / 'prices.html').read_text(encoding='utf-8'), 'html.parser')
 about = BeautifulSoup((SITE / 'about.html').read_text(encoding='utf-8'), 'html.parser')
 approach = BeautifulSoup((SITE / 'approach.html').read_text(encoding='utf-8'), 'html.parser')
 about_text = about.select_one('main').get_text(' ', strip=True)
 approach_text = approach.select_one('main').get_text(' ', strip=True)
+check(about.select_one('.about-story img.portrait-photo[src="assets/portrait-v1.png"]') is not None, 'about: approved portrait missing')
+check('Сообщество Анонимных Алкоголиков занимает важное место' not in about_text, 'about: removed AA paragraph returned')
+check(not contact.select('.primary-channels small'), 'contact: visible phone numbers returned')
+check('wrap' in contact.select_one('.contact-page').get('class', []), 'contact: main section not aligned to site grid')
 for fact in ('15 августа 1999', '2012 года', '520 учебных часов', '28 октября 2016',
-             '2017 · Варшава', '2011 · Таллинн', 'Oxford Learning', 'Анонимных Алкоголиков'):
+             '2017 · Варшава', '2011 · Таллинн', 'Oxford Learning'):
     check(fact in about_text, f'about: missing restored fact {fact}')
 for fact in ('отрицание', 'триггеры', 'предупреждающие признаки', 'Если произошёл срыв',
              'Между консультациями', 'не платное спонсорство'):
@@ -132,6 +137,8 @@ with sync_playwright() as p:
         page.locator('.main-cta').click()
         check(page.url.endswith('/contact.html'), f'{width}: CTA did not reach contacts')
         check(page.locator('main a[href="mailto:eglvlad2025@outlook.com"]').count() == 1, f'{width}: email missing from contacts')
+        lefts = page.eval_on_selector_all('.inner-hero .wrap, .contact-page, .booking-steps .wrap, .medical-copy', 'els => els.map(el => Math.round(el.getBoundingClientRect().left))')
+        check(len(lefts) == 4 and len(set(lefts)) == 1, f'{width}: contact section alignment differs: {lefts}')
         page.close()
     browser.close()
 

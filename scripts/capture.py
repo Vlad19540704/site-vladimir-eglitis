@@ -15,6 +15,12 @@ with sync_playwright() as p:
     for width, height in SIZES:
         page = browser.new_page(viewport={'width': width, 'height': height}, device_scale_factor=1)
         page.goto(BASE, wait_until='networkidle')
+        for img in page.locator('img').all():
+            img.scroll_into_view_if_needed()
+            try:
+                img.evaluate('(el) => el.decode()')
+            except Exception as error:
+                raise RuntimeError(f'Image failed to decode at {width}px: {img.get_attribute("src")}') from error
         page.screenshot(path=str(out / f'home-{width}x{height}.png'), full_page=True)
         print(f'{width}x{height}: title={page.title()!r}, scrollWidth={page.evaluate("document.documentElement.scrollWidth")}, viewport={width}')
         page.close()

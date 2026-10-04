@@ -2,7 +2,7 @@
   "domain_owned": true,
   "public_launch_approved": false,
   "contacts_verified": true,
-  "real_photo_approved": false,
+  "real_photo_approved": true,
   "ruble_terms_verified": true,
   "education_verified": false,
   "about_text_approved": false,

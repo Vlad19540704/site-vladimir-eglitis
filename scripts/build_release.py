@@ -19,7 +19,7 @@ PAGES = ['index.html', 'approach.html', 'about.html', 'prices.html', 'articles.h
          'contact.html', 'privacy.html', 'terms.html',
          'articles/kak-ponyat-problemu.html', 'articles/kak-brosit-pit.html']
 ASSETS = ['site-v10.css', 'site-v08.js', 'hero-sunset-v1.png', 'shore.webp',
-          'desk.webp', 'book.webp', 'portrait.webp', 'favicon.svg',
+          'desk.webp', 'book.webp', 'portrait-v1.png', 'favicon.svg',
           'icon-telegram.svg', 'icon-whatsapp.svg', 'icon-max.svg']
 REQUIRED = ['domain_owned', 'public_launch_approved', 'contacts_verified', 'real_photo_approved',
             'ruble_terms_verified', 'education_verified', 'about_text_approved', 'legal_terms_approved', 'privacy_policy_approved',
