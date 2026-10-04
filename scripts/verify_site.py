@@ -51,10 +51,14 @@ for path in PAGES:
         original = subprocess.check_output(['git', 'show', f'{BASELINE}:{path.relative_to(ROOT).as_posix()}'], cwd=ROOT).decode('utf-8')
         old = BeautifulSoup(original, 'html.parser')
         def authored(s):
-            return [(e.name, e.get_text(' ', strip=True)) for e in s.select('main .readable > p, main .readable > h2, main .readable > ul, main .readable > aside')]
+            return [(e.name, e.get_text(' ', strip=True)) for e in s.select('main .readable > p, main .readable > h2, main .readable > ul, main .readable > aside') if 'article-cta' not in e.get('class', []) and 'article-action' not in e.get('class', []) and 'subtle' not in e.get('class', [])]
         check(authored(soup) == authored(old), f'{rel}: authored article body changed')
         ld = soup.select('script[type="application/ld+json"]')
         check(len(ld) == 1, f'{rel}: expected one Article JSON-LD')
+        check(soup.select_one('.article-cover img') is not None, f'{rel}: cover missing')
+        check(soup.select_one('.article-byline .publication-pending') is not None, f'{rel}: publication field missing')
+        check(len(soup.select('.article-action a[href="../contact.html"]')) == 1, f'{rel}: contact CTA missing')
+        check(not soup.select_one('.contact-band, .article-cta'), f'{rel}: old CTA remains')
 
 check(len(PAGES) == 10, f'expected 10 pages, got {len(PAGES)}')
 check(len(list((SITE / 'articles').glob('*.html'))) == 2, 'unapproved article present')
@@ -71,6 +75,35 @@ check({a['href'] for a in contact.select('.primary-channels a')} == primary, 'co
 check(home.select_one('.hero h1').get_text(' ', strip=True) == 'Есть место, где можно говорить честно.', 'home: approved hero headline changed')
 check(len(home.select('.article-grid article')) == 2, 'home: wrong article count')
 check(home.select_one('.portrait-placeholder') is not None, 'home: neutral portrait place missing')
+check(not home.select_one('.hero-more, .about-quote'), 'home: removed links or quote returned')
+check(len(BeautifulSoup((SITE / 'articles.html').read_text(encoding='utf-8'), 'html.parser').select('.article-list img')) == 2, 'articles: card covers missing')
+prices = BeautifulSoup((SITE / 'prices.html').read_text(encoding='utf-8'), 'html.parser')
+about = BeautifulSoup((SITE / 'about.html').read_text(encoding='utf-8'), 'html.parser')
+approach = BeautifulSoup((SITE / 'approach.html').read_text(encoding='utf-8'), 'html.parser')
+about_text = about.select_one('main').get_text(' ', strip=True)
+approach_text = approach.select_one('main').get_text(' ', strip=True)
+for fact in ('15 августа 1999', '2012 года', '520 учебных часов', '28 октября 2016',
+             '2017 · Варшава', '2011 · Таллинн', 'Oxford Learning', 'Анонимных Алкоголиков'):
+    check(fact in about_text, f'about: missing restored fact {fact}')
+for fact in ('отрицание', 'триггеры', 'предупреждающие признаки', 'Если произошёл срыв',
+             'Между консультациями', 'не платное спонсорство'):
+    check(fact in approach_text, f'approach: missing restored topic {fact}')
+check(len(approach.select('.approach-faq details')) == 5, 'approach: FAQ missing')
+check(len(contact.select('.booking-grid > div')) == 3, 'contact: booking sequence missing')
+if prices.select_one('.price-pending'):
+    ruble_section = prices.select_one('.price-list h2').find_next_sibling()
+    check('₽' not in ruble_section.get_text(), 'prices: outdated ruble amount shown')
+else:
+    amounts = {row.get_text(' ', strip=True) for row in prices.select('.price-list .amount') if '₽' in row.get_text()}
+    check(amounts == {'5 000 ₽', '4 500 ₽', '3 500 ₽'}, 'prices: confirmed ruble amounts changed')
+    durations = [row.select_one('p').get_text(' ', strip=True) for row in prices.select('.price-row') if '₽' in row.get_text()]
+    check(durations == ['60 минут', '50 минут', '30–40 минут'], 'prices: confirmed durations changed')
+for brand in ('telegram', 'whatsapp', 'max'):
+    check((SITE / 'assets' / f'icon-{brand}.svg').is_file(), f'{brand}: icon asset missing')
+for path in PAGES:
+    page = BeautifulSoup(path.read_text(encoding='utf-8'), 'html.parser')
+    check(not page.select_one('.footer-quote, .footer-contact-cta'), f'{path.name}: old footer elements returned')
+    check(len(page.select('.footer-channels .messenger-icon')) == 3, f'{path.name}: messenger icons missing')
 
 with sync_playwright() as p:
     browser = p.chromium.launch(executable_path=r'C:\Program Files\Google\Chrome\Application\chrome.exe', headless=True)
@@ -86,6 +119,8 @@ with sync_playwright() as p:
                 img.evaluate('(el) => el.decode()')
                 check(img.evaluate('(el) => el.complete && el.naturalWidth > 0'), f'{rel}@{width}: broken image')
         page.goto('http://127.0.0.1:8080/')
+        size = float(page.locator('.problem-section .copy p').evaluate('(el) => getComputedStyle(el).fontSize.replace("px", "")'))
+        check(size >= 18, f'{width}: body text still too small ({size}px)')
         if width <= 920:
             page.get_by_role('button', name='Открыть меню').focus()
             page.keyboard.press('Enter')

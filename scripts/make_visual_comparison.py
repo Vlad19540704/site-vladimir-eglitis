@@ -8,8 +8,9 @@ sys.stdout.reconfigure(encoding="utf-8")
 
 ROOT = Path(__file__).resolve().parents[1]
 REFERENCE = ROOT.parent / "Главная непидорская.png"
-CURRENT = ROOT / "output/playwright/reference-restored-final/home-1440x900.png"
-OUT = ROOT / "output/playwright/reference-vs-restored-desktop.png"
+STAGE = sys.argv[1] if len(sys.argv) > 1 else "desktop-content-restored"
+CURRENT = ROOT / "output/playwright" / STAGE / "home-1440x900.png"
+OUT = ROOT / "output/playwright" / f"reference-vs-{STAGE}.png"
 
 reference = Image.open(REFERENCE).convert("RGB")
 current = Image.open(CURRENT).convert("RGB")

@@ -4,6 +4,8 @@
   "contacts_verified": true,
   "real_photo_approved": false,
   "ruble_terms_verified": true,
+  "education_verified": false,
+  "about_text_approved": false,
   "legal_terms_approved": false,
   "privacy_policy_approved": false,
   "article_dates_confirmed": false,
