@@ -11,11 +11,5 @@ SITE_DOMAIN {
     @hidden path /.git/* /.env* /deploy/* /scripts/*
     respond @hidden 404
     file_server
-    log {
-        output file /var/log/caddy/site-access.log {
-            roll_size 10MiB
-            roll_keep 5
-        }
-        format json
-    }
+    # No per-request access log until the data policy and retention are approved.
 }

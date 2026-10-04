@@ -35,8 +35,12 @@ missing = [key for key in REQUIRED if approval.get(key) is not True]
 missing += [f'file:{rel}' for rel in PAGES + ['assets/' + a for a in ASSETS] if not (SITE / rel).is_file()]
 for rel in ['index.html', 'contact.html', 'prices.html']:
     if (SITE / rel).is_file() and any(term in (SITE / rel).read_text(encoding='utf-8').lower()
-                                        for term in ['после подтверждения', 'уточняются', 'предпубликационная версия']):
+                                        for term in ['после подтверждения', 'уточняются']):
         missing.append(f'placeholder:{rel}')
+if (SITE / 'about.html').is_file():
+    about = BeautifulSoup((SITE / 'about.html').read_text(encoding='utf-8'), 'html.parser')
+    if about.select_one('.portrait-placeholder'):
+        missing.append('placeholder:about.html')
 if (SITE / 'contact.html').is_file():
     contact = BeautifulSoup((SITE / 'contact.html').read_text(encoding='utf-8'), 'html.parser')
     if not contact.select('main a[href^="mailto:"], main a[href^="https://"]'):
@@ -60,6 +64,9 @@ for rel in PAGES:
     soup = BeautifulSoup(source.read_text(encoding='utf-8'), 'html.parser')
     robots = soup.select_one('meta[name="robots"]')
     robots['content'] = 'index,follow'
+    for node in soup.find_all(string=True):
+        if 'Предпубликационная версия' in node:
+            node.replace_with(node.replace(' · Предпубликационная версия', '').replace('Предпубликационная версия', ''))
     canonical = soup.new_tag('link', rel='canonical', href='https://' + domain + '/' + ('' if rel == 'index.html' else rel))
     soup.head.append(canonical)
     dest.write_text(str(soup), encoding='utf-8')
