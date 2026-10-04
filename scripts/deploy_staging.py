@@ -31,7 +31,7 @@ def main() -> None:
         path for path in site.rglob("*")
         if path.is_file() and (path.suffix.lower() in ALLOWED_SUFFIXES or path.name == "robots.txt")
     )
-    if len([path for path in files if path.suffix == ".html"]) != 8:
+    if len([path for path in files if path.suffix == ".html"]) != 10:
         raise SystemExit("Unexpected HTML page count")
     root = "/srv/site/staging"
     release = posixpath.join(root, "releases", revision)

@@ -56,9 +56,21 @@ for path in PAGES:
         ld = soup.select('script[type="application/ld+json"]')
         check(len(ld) == 1, f'{rel}: expected one Article JSON-LD')
 
-check(len(PAGES) == 8, f'expected 8 pages, got {len(PAGES)}')
+check(len(PAGES) == 10, f'expected 10 pages, got {len(PAGES)}')
 check(len(list((SITE / 'articles').glob('*.html'))) == 2, 'unapproved article present')
 check('Disallow: /' in (SITE / 'robots.txt').read_text(), 'staging robots allows crawl')
+home = BeautifulSoup((SITE / 'index.html').read_text(encoding='utf-8'), 'html.parser')
+contact = BeautifulSoup((SITE / 'contact.html').read_text(encoding='utf-8'), 'html.parser')
+primary = {
+    'https://t.me/+358466170891',
+    'https://wa.me/358466170891',
+    'https://max.ru/u/f9LHodD0cOJ57eetEyicu--mDK2NszjKeeEYBEHcl7uGccaQ9irTHc0Jg6k',
+}
+check({a['href'] for a in home.select('.hero-direct a')} == primary, 'home: primary messengers differ')
+check({a['href'] for a in contact.select('.primary-channels a')} == primary, 'contact: primary messengers differ')
+check(home.select_one('.hero h1').get_text(' ', strip=True) == 'Есть место, где можно говорить честно.', 'home: approved hero headline changed')
+check(len(home.select('.article-grid article')) == 2, 'home: wrong article count')
+check(home.select_one('.portrait-placeholder') is not None, 'home: neutral portrait place missing')
 
 with sync_playwright() as p:
     browser = p.chromium.launch(executable_path=r'C:\Program Files\Google\Chrome\Application\chrome.exe', headless=True)
@@ -81,8 +93,8 @@ with sync_playwright() as p:
             page.keyboard.press('Escape')
             check(not page.locator('#main-nav').is_visible(), f'{width}: menu did not close with Escape')
             check(page.get_by_role('button', name='Открыть меню').evaluate('(el) => document.activeElement === el'), f'{width}: focus not restored')
-        check(page.locator('.main-cta').get_attribute('href') == 'https://wa.me/358466170891', f'{width}: primary CTA is not WhatsApp')
-        page.get_by_role('link', name='Контакты').first.click()
+        check(page.locator('.main-cta').get_attribute('href') == 'contact.html', f'{width}: main CTA does not offer all messengers')
+        page.locator('.main-cta').click()
         check(page.url.endswith('/contact.html'), f'{width}: CTA did not reach contacts')
         check(page.locator('main a[href="mailto:eglvlad2025@outlook.com"]').count() == 1, f'{width}: email missing from contacts')
         page.close()

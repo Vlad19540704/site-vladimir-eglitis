@@ -12,7 +12,7 @@ from playwright.sync_api import sync_playwright
 
 PAGES = (
     "index.html", "about.html", "approach.html", "prices.html",
-    "articles.html", "contact.html", "articles/kak-brosit-pit.html",
+    "articles.html", "contact.html", "privacy.html", "terms.html", "articles/kak-brosit-pit.html",
     "articles/kak-ponyat-problemu.html",
 )
 

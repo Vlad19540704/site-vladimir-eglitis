@@ -16,8 +16,8 @@ SITE = ROOT / 'site'
 PAGES = ['index.html', 'approach.html', 'about.html', 'prices.html', 'articles.html',
          'contact.html', 'privacy.html', 'terms.html',
          'articles/kak-ponyat-problemu.html', 'articles/kak-brosit-pit.html']
-ASSETS = ['site-v08.css', 'site-v08.js', 'shore.webp', 'desk.webp', 'book.webp',
-          'study-detail.webp', 'portrait.webp', 'favicon.svg']
+ASSETS = ['site-v09.css', 'site-v08.js', 'hero-sunset-v1.png', 'shore.webp',
+          'desk.webp', 'book.webp', 'portrait.webp', 'favicon.svg']
 REQUIRED = ['domain_owned', 'public_launch_approved', 'contacts_verified', 'real_photo_approved',
             'ruble_terms_verified', 'legal_terms_approved', 'privacy_policy_approved',
             'article_dates_confirmed', 'visual_approved']
@@ -37,10 +37,11 @@ for rel in ['index.html', 'contact.html', 'prices.html']:
     if (SITE / rel).is_file() and any(term in (SITE / rel).read_text(encoding='utf-8').lower()
                                         for term in ['после подтверждения', 'уточняются']):
         missing.append(f'placeholder:{rel}')
-if (SITE / 'about.html').is_file():
-    about = BeautifulSoup((SITE / 'about.html').read_text(encoding='utf-8'), 'html.parser')
-    if about.select_one('.portrait-placeholder'):
-        missing.append('placeholder:about.html')
+for rel in ('index.html', 'about.html'):
+    if (SITE / rel).is_file():
+        page = BeautifulSoup((SITE / rel).read_text(encoding='utf-8'), 'html.parser')
+        if page.select_one('.portrait-placeholder'):
+            missing.append(f'placeholder:{rel}')
 if (SITE / 'contact.html').is_file():
     contact = BeautifulSoup((SITE / 'contact.html').read_text(encoding='utf-8'), 'html.parser')
     if not contact.select('main a[href^="mailto:"], main a[href^="https://"]'):
