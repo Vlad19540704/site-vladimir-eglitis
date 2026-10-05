@@ -4,7 +4,7 @@ from playwright.sync_api import sync_playwright
 
 sys.stdout.reconfigure(encoding='utf-8')
 
-BASE = 'http://127.0.0.1:8080/'
+BASE = (sys.argv[2] if len(sys.argv) > 2 else 'http://127.0.0.1:8080/').rstrip('/') + '/'
 SIZES = [(1440, 900), (768, 1024), (390, 844), (320, 700)]
 stage = sys.argv[1] if len(sys.argv) > 1 else 'baseline'
 out = Path(__file__).resolve().parents[1] / 'output' / 'playwright' / stage
