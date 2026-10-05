@@ -26,4 +26,10 @@ Site Scan не запущен: кабинет показывает **Quota left:
 
 ## Локальные подтверждения
 
+### Результат последующей QA
+
+Google успешно обработал sitemap: статус «Успешно», 10 выявленных страниц. Первоначальная ошибка получения карты больше не отображается. Отчёт индексирования продолжает обработку; подтверждения индекса всех страниц ещё нет. Безопасность и ручные меры: «Проблем нет». Bing остаётся Success/10 URL/0 errors/0 warnings. Полная техническая SEO-проверка опубликованного сайта прошла; mobile Lighthouse SEO 100, Performance 99, desktop все четыре категории 100. Это не оценка позиций в выдаче. Релиз переведён на основную ветку master, хэши сервера подтверждены, после обновлений ОС отдельный VPS перезагружен.
+
+Уточнение резервирования: прежний backup staging сохранял локальную сборку. Это исправлено: теперь скачиваются именно активные файлы сервера; настоящая копия прежнего production aa16bff230c0 проверена восстановлением и SHA-256. Детальный протокол — `QA_REPORT_2026-10-05.md`.
+
 Скриншоты кабинетов в игнорируемом `output/`: `google-sitemap-submitted.jpg`, `google-sitemap-live-access.jpg`, `google-home-index-requested.jpg`, `google-article1-index-requested.jpg`, `google-article2-index-requested.jpg`, `bing-sitemap-success.jpg`, `bing-urls-submitted.jpg`, `bing-scan-quota.jpg`. Production 1440/768/390/320 — `output/playwright/production/`, сравнение — `output/playwright/reference-vs-production.png`, обновлённые цены — `output/playwright/free-intro/`. Эти файлы локальные, не содержат исходных дипломов и не публикуются вместе с сайтом.
