@@ -15,6 +15,7 @@ ROOT = Path(__file__).resolve().parents[1]
 def check(live=False):
     providers = []
     collections = []
+    collection_statuses = []
     errors = []
     with sync_playwright() as pw:
         chrome = Path(r'C:\Program Files\Google\Chrome\Application\chrome.exe')
@@ -40,6 +41,8 @@ def check(live=False):
                         # Persist only whitelisted harmless fields, never client/session IDs.
                         collections.append({key: value for key,value in event.items() if key in ('tid','en','dl','dt','dr','ep.contact_method','ep.placement')})
         page.on('request', request)
+        page.on('response', lambda response: collection_statuses.append(response.status)
+                if urlparse(response.url).path.endswith('/collect') else None)
         page.goto('https://eglitisonline.com/contact.html?text=qa-hidden-text&email=qa-test%40example.com#qa-hidden-text')
         page.wait_for_timeout(1500)
         assert not providers, 'Provider loaded before visitor consent'
@@ -64,14 +67,18 @@ def check(live=False):
                 if 'dt' in event: assert event['dt'] == ['Контакты']
             page.get_by_role('button',name='Настройки приватности',exact=True).click()
         before = len(providers)
-        page.get_by_role('button',name='Отклонить всё',exact=True).click()
-        page.wait_for_load_state()
+        if live:
+            with page.expect_navigation():
+                page.get_by_role('button',name='Отклонить всё',exact=True).click()
+        else:
+            page.get_by_role('button',name='Отклонить всё',exact=True).click()
         page.wait_for_timeout(1000)
         assert len(providers) == before, 'Provider resumed after withdrawal'
         assert not any(v['name'].startswith('_ga') for v in context.cookies()), 'Analytics cookies survived withdrawal'
         assert not errors, errors
         report = dict(live=live, no_requests_before_consent=True, denial_persists=True,
                       withdrawal_stops_requests=True, cookies_cleared=True, events=collections,
+                      collection_statuses=collection_statuses,
                       provider_hosts=sorted(set(providers)), jivo_loaded=any('jivo' in (host or '') for host in providers))
         assert not report['jivo_loaded'], 'Unapproved Jivo must remain disabled'
         output = ROOT / 'output/analytics-runtime.json'

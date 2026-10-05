@@ -95,6 +95,9 @@
       });
     });
   };
+  // The provider may rewrite its session cookie during the old document's unload.
+  // Remove residual cookies again in the new document when consent is absent.
+  if (!analyticsAllowed) clearProviderCookies();
 
   const dialog = document.createElement('dialog');
   dialog.className = 'privacy-dialog'; dialog.setAttribute('aria-labelledby', 'privacy-heading');
@@ -130,6 +133,7 @@
     const reload = (analyticsLoaded && !allowed) || chatRequested;
     analyticsAllowed = hasAnalytics && allowed; store(analyticsAllowed); banner.remove();
     if (reload) {
+      if (hasAnalytics) window['ga-disable-' + config.ga4Id] = true;
       clearProviderCookies();
       // A new document releases provider scripts, connections and third-party frames.
       location.reload(); return true;

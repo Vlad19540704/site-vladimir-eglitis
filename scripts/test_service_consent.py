@@ -77,7 +77,7 @@ class BrowserConsent(unittest.TestCase):
         else:
             self.requests.append(route.request.url)
             if url.hostname == 'www.googletagmanager.com':
-                route.fulfill(content_type='application/javascript', body='window.fakeAnalyticsReady=true;')
+                route.fulfill(content_type='application/javascript', body="window.fakeAnalyticsReady=true; document.cookie='_ga=fixture;path=/'; window.addEventListener('pagehide',()=>{document.cookie='_ga_TEST123456=late-session-write;path=/;domain=eglitisonline.com';});")
             elif url.hostname == 'code.jivosite.com' and not self.chat_fails:
                 route.fulfill(content_type='application/javascript', body="window.jivo_api={setWidgetColor:(...v)=>window.chatColors=v,open:(v)=>window.chatOpened=v};window.jivo_onLoadCallback();")
             else:
@@ -116,6 +116,7 @@ class BrowserConsent(unittest.TestCase):
         self.page.wait_for_load_state()
         self.assertEqual(len(self.requests), 1)
         self.assertIsNone(self.page.evaluate('window.fakeAnalyticsReady || null'))
+        self.assertFalse(any(v['name'].startswith('_ga') for v in self.context.cookies()))
 
     def test_expired_choice_and_unknown_referrer_are_discarded(self):
         self.context.add_init_script("localStorage.setItem('eglitisonline.privacy',JSON.stringify({version:'old',analytics:true,time:Date.now()}));")
