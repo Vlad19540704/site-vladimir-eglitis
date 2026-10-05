@@ -6,7 +6,8 @@
   let config;
   try { config = JSON.parse(configNode.textContent); } catch (_) { return; }
   const hasAnalytics = /^G-[A-Z0-9]{6,20}$/.test(config.ga4Id || '');
-  const hasChat = /^[A-Za-z0-9]{5,40}$/.test(config.jivoId || '') && config.jivoApproved === true;
+  const hasChat = /^[a-f0-9]{24}$/.test(config.tawkProperty || '') &&
+    /^[a-z0-9]{8,30}$/.test(config.tawkWidget || '') && config.tawkApproved === true;
   if (!hasAnalytics && !hasChat) return;
   const networkAllowed = config.networkEnabled === true && location.protocol === 'https:' &&
     location.hostname === 'eglitisonline.com' &&
@@ -86,15 +87,27 @@
     document.head.append(tag); analyticsLoaded = true;
     event('page_view');
   };
-  const clearProviderCookies = () => {
+  const clearProviderCookies = (chatOnly = false) => {
     document.cookie.split(';').forEach(cookie => {
       const name = cookie.trim().split('=')[0];
-      if (!/^(_ga($|_)|_gid$|_gat|_gcl_|jv_|jv|JIVO)/.test(name)) return;
+      if (chatOnly && !/^(Tawk|tawk|twk)/.test(name)) return;
+      if (!/^(_ga($|_)|_gid$|_gat|_gcl_|jv_|jv|JIVO|Tawk|tawk|twk)/.test(name)) return;
       ['', 'eglitisonline.com', '.eglitisonline.com'].forEach(domain => {
         document.cookie = name + '=; Max-Age=0; path=/; SameSite=Lax' + (domain ? '; domain=' + domain : '');
       });
     });
   };
+  const clearChatStorage = () => {
+    for (const kind of ['localStorage', 'sessionStorage']) {
+      try {
+        const storage = window[kind];
+        Object.keys(storage).filter(key => /^(Tawk|tawk|twk)/.test(key)).forEach(key => storage.removeItem(key));
+      } catch (_) { /* Storage may be unavailable. */ }
+    }
+  };
+  // Chat consent is never carried to another document.
+  clearChatStorage();
+  clearProviderCookies(true);
   // The provider may rewrite its session cookie during the old document's unload.
   // Remove residual cookies again in the new document when consent is absent.
   if (!analyticsAllowed) clearProviderCookies();
@@ -104,7 +117,7 @@
   dialog.innerHTML = '<h2 id="privacy-heading">Настройки приватности</h2>' +
     '<p>Сайт и мессенджеры доступны независимо от выбранных настроек.</p>' +
     (hasAnalytics ? '<label class="consent-option"><input id="analytics-choice" type="checkbox"><span>Разрешить статистику посещений Google Analytics.</span></label><p class="consent-detail">Учитываются просмотры и выбор способа связи. Содержание переписки, контакты и сведения о здоровье в статистику не отправляются.</p>' : '') +
-    (hasChat ? '<div class="chat-consent"><h3>Чат на сайте</h3><p>Чат работает через Jivo. Для записи достаточно организационного вопроса; медицинскую историю отправлять не нужно.</p><label class="consent-option"><input id="chat-choice" type="checkbox"><span>Я явно соглашаюсь на обработку моего сообщения и технических данных Владимиром Эглитисом через Jivo, включая сведения о здоровье, если я сам решу их сообщить.</span></label></div>' : '') +
+    (hasChat ? '<div class="chat-consent"><h3>Чат на сайте</h3><p>Чат через tawk.to предназначен для записи и вопросов о встрече. Не отправляйте медицинские документы и подробности о здоровье. Переписка и технические данные обрабатываются в США.</p><label class="consent-option"><input id="chat-choice" type="checkbox"><span>Соглашаюсь на обработку сообщения и технических данных Владимиром Эглитисом через tawk.to для ответа на обращение.</span></label></div>' : '') +
     '<p><a href="' + privacyLink + '">Подробнее об обработке данных</a>. Согласие можно отозвать в этих настройках или написать на email из политики.</p><p class="consent-error" role="alert" hidden></p>' +
     '<div class="consent-actions"><button type="button" class="consent-button consent-save">Сохранить выбор</button><button type="button" class="consent-button consent-deny">Отклонить всё</button><button type="button" class="consent-button consent-close">Закрыть</button></div>';
   document.body.append(dialog);
@@ -134,6 +147,9 @@
     analyticsAllowed = hasAnalytics && allowed; store(analyticsAllowed); banner.remove();
     if (reload) {
       if (hasAnalytics) window['ga-disable-' + config.ga4Id] = true;
+      window.Tawk_API?.shutdown?.();
+      window.Tawk_API?.hideWidget?.();
+      clearChatStorage();
       clearProviderCookies();
       // A new document releases provider scripts, connections and third-party frames.
       location.reload(); return true;
@@ -149,26 +165,27 @@
   });
   const loadChat = () => {
     if (!networkAllowed) { announce('Чат доступен на публичном сайте. Можно использовать мессенджеры.'); return; }
-    if (chatLoaded) { window.jivo_api?.open({start: 'chat'}); return; }
+    if (chatLoaded) { window.Tawk_API?.showWidget?.(); window.Tawk_API?.maximize?.(); return; }
     if (chatLoading) return;
     chatLoading = true; chatRequested = true; announce('Открываю чат…');
     // Query and fragment are not needed for chat. Never forward their free text.
     if (location.search || location.hash) history.replaceState(null, '', location.pathname);
     const fail = () => { clearTimeout(loadTimeout); chatLoading = false; announce('Чат не загрузился. Напишите Владимиру через Telegram, WhatsApp или MAX.'); };
-    window.jivo_onLoadCallback = () => {
+    window.Tawk_API = window.Tawk_API || {};
+    window.Tawk_API.onLoad = () => {
       clearTimeout(loadTimeout); chatLoaded = true; chatLoading = false;
-      window.jivo_api.setWidgetColor('#806342', '#806342');
-      window.jivo_api.open({start: 'chat'}); announce('');
+      window.Tawk_API.showWidget(); window.Tawk_API.maximize(); announce('');
     };
     const tag = document.createElement('script'); tag.async = true;
-    tag.src = 'https://code.jivosite.com/widget/' + config.jivoId;
+    tag.src = 'https://embed.tawk.to/' + config.tawkProperty + '/' + config.tawkWidget;
+    tag.charset = 'UTF-8'; tag.crossOrigin = 'anonymous';
     tag.referrerPolicy = 'no-referrer'; tag.onerror = fail;
     loadTimeout = setTimeout(fail, 20000); document.head.append(tag);
     event('chat_open_request', {contact_method: 'site_chat'});
   };
   dialog.querySelector('.consent-save').addEventListener('click', () => {
     if (pendingChat && !chatInput?.checked) {
-      consentError.textContent = 'Для чата нужно отметить отдельное согласие. Можно выбрать мессенджер без подключения Jivo.';
+      consentError.textContent = 'Для чата нужно отметить отдельное согласие. Можно выбрать мессенджер без подключения tawk.to.';
       consentError.hidden = false; chatInput?.focus(); return;
     }
     const shouldChat = pendingChat && chatInput?.checked;
@@ -183,7 +200,7 @@
     const makeChatButton = () => {
       const button = document.createElement('button'); button.type = 'button';
       button.className = 'site-chat-trigger'; button.textContent = 'Чат на сайте';
-      button.addEventListener('click', e => chatLoaded ? window.jivo_api.open({start: 'chat'}) : openDialog(true, e.currentTarget));
+      button.addEventListener('click', e => chatLoaded ? (window.Tawk_API.showWidget(), window.Tawk_API.maximize()) : openDialog(true, e.currentTarget));
       return button;
     };
     document.querySelector('.footer-contact')?.append(makeChatButton());

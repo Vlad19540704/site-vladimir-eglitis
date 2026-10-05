@@ -17,6 +17,10 @@ CONTACT_URLS = {
     'https://max.ru/u/f9LHodD0cOJ57eetEyicu--mDK2NszjKeeEYBEHcl7uGccaQ9irTHc0Jg6k',
     'https://t.me/+358466170891',
 }
+PRIVACY_URLS = {
+    'https://www.tawk.to/data-protection/dpa-data-processing-addendum/',
+    'https://www.tawk.to/privacy-policy/',
+}
 errors = []
 
 def check(ok, message):
@@ -36,7 +40,7 @@ for path in PAGES:
         check(href not in ('#', '') and not href.startswith('javascript:'), f'{rel}: false href {href}')
         parsed = urlparse(href)
         if parsed.scheme in ('http', 'https', 'mailto'):
-            check(href in CONTACT_URLS, f'{rel}: unexpected external link: {href}')
+            check(href in CONTACT_URLS or (rel == 'privacy.html' and href in PRIVACY_URLS), f'{rel}: unexpected external link: {href}')
             if parsed.scheme == 'https':
                 check(a.get('rel') == ['noopener', 'noreferrer'] and a.get('target') == '_blank', f'{rel}: unsafe external link: {href}')
         elif not parsed.scheme and parsed.path:

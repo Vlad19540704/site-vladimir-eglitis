@@ -11,10 +11,32 @@ from service_config import service_config, embed_service_config
 
 ROOT = Path(__file__).resolve().parents[1]
 CONFIG = dict(ga4Id='G-TEST123456', jivoId='TestWidget', jivoApproved=True,
+              tawkProperty='a'*24, tawkWidget='testwidget', tawkApproved=True,
               networkEnabled=True, consentVersion='2026-10-05-v1')
 
 
 class ConfigSafety(unittest.TestCase):
+    def test_tawk_requires_terms_install_and_valid_pair(self):
+        with TemporaryDirectory() as directory:
+            repo = Path(directory)
+            values = repo / 'services.public.json'
+            values.write_text(json.dumps(dict(tawk_property_id='a'*24, tawk_widget_id='testwidget')))
+            self.assertFalse(service_config(repo, preview=True)['networkEnabled'])
+            with self.assertRaisesRegex(SystemExit, 'Tawk requires owner acceptance'):
+                service_config(repo)
+            approval = repo / 'service_approval.json'
+            approval.write_text('{"tawk_terms_accepted":true}')
+            with self.assertRaisesRegex(SystemExit, 'Tawk requires owner approval'):
+                service_config(repo)
+            approval.write_text('{"tawk_terms_accepted":true,"tawk_install_approved":true}')
+            self.assertTrue(service_config(repo)['tawkApproved'])
+            values.write_text('{"tawk_property_id":"not-a-property","tawk_widget_id":"testwidget"}')
+            with self.assertRaisesRegex(SystemExit, 'Invalid public Tawk'):
+                service_config(repo)
+            values.write_text('{"tawk_property_id":"aaaaaaaaaaaaaaaaaaaaaaaa"}')
+            with self.assertRaisesRegex(SystemExit, 'both public embed'):
+                service_config(repo)
+
     def test_contract_gates_and_preview(self):
         with TemporaryDirectory() as directory:
             repo = Path(directory)
@@ -78,8 +100,8 @@ class BrowserConsent(unittest.TestCase):
             self.requests.append(route.request.url)
             if url.hostname == 'www.googletagmanager.com':
                 route.fulfill(content_type='application/javascript', body="window.fakeAnalyticsReady=true; document.cookie='_ga=fixture;path=/'; window.addEventListener('pagehide',()=>{document.cookie='_ga_TEST123456=late-session-write;path=/;domain=eglitisonline.com';});")
-            elif url.hostname == 'code.jivosite.com' and not self.chat_fails:
-                route.fulfill(content_type='application/javascript', body="window.jivo_api={setWidgetColor:(...v)=>window.chatColors=v,open:(v)=>window.chatOpened=v};window.jivo_onLoadCallback();")
+            elif url.hostname == 'embed.tawk.to' and not self.chat_fails:
+                route.fulfill(content_type='application/javascript', body="Object.assign(window.Tawk_API,{showWidget:()=>{},maximize:()=>window.chatOpened=true,shutdown:()=>{},hideWidget:()=>{}});document.cookie='TawkConnectionTime=fixture;path=/';localStorage.setItem('twk_test','fixture');window.Tawk_API.onLoad();")
             else:
                 route.abort()
 
@@ -157,7 +179,7 @@ class BrowserConsent(unittest.TestCase):
         self.page.get_by_role('button', name='Настройки приватности', exact=True).click()
         self.page.get_by_role('button', name='Отклонить всё', exact=True).click()
         self.page.wait_for_load_state()
-        self.assertFalse(self.page.locator('script[src*="jivosite"]').count())
+        self.assertFalse(self.page.locator('script[src*="embed.tawk.to"]').count())
         self.assertEqual(len(self.requests), 1)
 
     def test_chat_needs_separate_consent_and_withdrawal_unloads(self):
@@ -171,12 +193,14 @@ class BrowserConsent(unittest.TestCase):
         self.page.get_by_role('button', name='Открыть чат', exact=True).click()
         self.page.wait_for_function('window.chatOpened')
         self.assertEqual(self.page.url, 'https://eglitisonline.com/contact.html')
-        self.assertEqual(self.page.evaluate('window.chatColors'), ['#806342', '#806342'])
+        self.assertFalse(any('jivosite' in v for v in self.requests))
         self.assertEqual(len(self.requests), 1)
         self.page.get_by_role('button', name='Настройки приватности', exact=True).click()
         self.page.get_by_role('button', name='Отклонить всё', exact=True).click()
         self.page.wait_for_load_state()
         self.assertIsNone(self.page.evaluate('window.chatOpened || null'))
+        self.assertFalse(any(v['name'].startswith(('Tawk','twk')) for v in self.context.cookies()))
+        self.assertIsNone(self.page.evaluate("localStorage.getItem('twk_test')"))
         self.assertEqual(len(self.requests), 1)
 
     def test_preview_and_noindex_never_connect(self):
