@@ -9,7 +9,7 @@ from playwright.sync_api import sync_playwright
 sys.stdout.reconfigure(encoding='utf-8')
 ROOT = Path(__file__).resolve().parents[1]
 SITE = ROOT / 'site'
-PAGES = sorted(SITE.glob('*.html')) + sorted((SITE / 'articles').glob('*.html'))
+PAGES = sorted(path for path in SITE.glob('*.html') if path.name != '404.html') + sorted((SITE / 'articles').glob('*.html'))
 BASELINE = '68a8d59'
 CONTACT_URLS = {
     'https://wa.me/358466170891',

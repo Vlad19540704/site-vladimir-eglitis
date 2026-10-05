@@ -5,15 +5,33 @@ from pathlib import Path
 import unittest
 from unittest.mock import patch
 from datetime import date
+from tempfile import TemporaryDirectory
+import hashlib
 from bs4 import BeautifulSoup
 
 from git_release_guard import published_revision
 from seo_metadata import enrich
+from asset_fingerprints import asset_map, rewrite_assets
 
 ROOT = Path(__file__).resolve().parents[1]
 
 
 class ReleaseSafety(unittest.TestCase):
+    def test_image_change_invalidates_image_and_referencing_css(self):
+        with TemporaryDirectory() as directory:
+            site = Path(directory)
+            (site / 'assets').mkdir()
+            image = site / 'assets' / 'hero.webp'
+            image.write_bytes(b'original-image')
+            (site / 'assets' / 'site.css').write_bytes(b'body{background:url(hero.webp)}\r\n')
+            first = asset_map(site, ['hero.webp', 'site.css'])
+            image.write_bytes(b'changed-image')
+            second = asset_map(site, ['hero.webp', 'site.css'])
+            self.assertNotEqual(first['hero.webp'], second['hero.webp'])
+            self.assertNotEqual(first['site.css'], second['site.css'])
+            css = rewrite_assets((site / 'assets' / 'site.css').read_text(), second).encode()
+            self.assertIn(hashlib.sha256(css).hexdigest()[:12], second['site.css'])
+
     def test_uncommitted_changes_cannot_deploy(self):
         with patch('git_release_guard.subprocess.check_output', return_value=' M site/index.html\n'):
             with self.assertRaisesRegex(SystemExit, 'Commit and push'):

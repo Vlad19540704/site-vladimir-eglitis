@@ -17,6 +17,7 @@ import sys
 from bs4 import BeautifulSoup
 from seo_metadata import enrich
 from git_release_guard import published_revision
+from asset_fingerprints import asset_map, rewrite_assets
 
 sys.stdout.reconfigure(encoding='utf-8')
 
@@ -28,6 +29,7 @@ PAGES = ['index.html', 'approach.html', 'about.html', 'prices.html', 'articles.h
 ASSETS = ['site-v10.css', 'site-v08.js', 'hero-sunset-v1.webp', 'shore.webp',
           'desk.webp', 'book.webp', 'portrait-v1.webp', 'favicon.svg',
           'icon-telegram.svg', 'icon-whatsapp.svg', 'icon-max.svg']
+ASSETS += ['portrait-v1-480.webp', 'portrait-v1-800.webp']
 REQUIRED = ['domain_owned', 'public_launch_approved', 'contacts_verified', 'real_photo_approved',
             'ruble_terms_verified', 'education_verified', 'about_text_approved', 'legal_terms_approved', 'privacy_policy_approved',
             'article_dates_confirmed', 'visual_approved']
@@ -84,6 +86,7 @@ if out.parent != (ROOT / 'release').resolve():
 if out.exists():
     shutil.rmtree(out)
 out.mkdir(parents=True)
+fingerprints = asset_map(SITE, ASSETS)
 for rel in PAGES:
     source = SITE / rel
     dest = out / rel
@@ -106,14 +109,24 @@ for rel in PAGES:
         if 'Предпубликационная версия' in node and not args.preview:
             node.replace_with(node.replace(' · Предпубликационная версия', '').replace('Предпубликационная версия', ''))
     enrich(soup, rel, domain, SITE, None if args.preview else published_on)
-    html = str(soup)
+    for link in soup.select('a[href]'):
+        if link['href'] in ('index.html', '../index.html'):
+            link['href'] = '/'
+    html = rewrite_assets(str(soup), fingerprints)
     html = re.sub(r'<(meta|link|br|img)([^>]*)/>', r'<\1\2>', html)
     html = html.replace(' defer=""', ' defer')
     dest.write_text(html, encoding='utf-8')
 for asset in ASSETS:
-    dest = out / 'assets' / asset
+    dest = out / 'assets' / fingerprints[asset]
     dest.parent.mkdir(exist_ok=True)
-    shutil.copy2(SITE / 'assets' / asset, dest)
+    if asset.endswith(('.css', '.js')):
+        dest.write_bytes(rewrite_assets((SITE / 'assets' / asset).read_text(encoding='utf-8'), fingerprints).encode('utf-8'))
+    else:
+        shutil.copy2(SITE / 'assets' / asset, dest)
+# An error page is a technical route, not an indexable content page.
+error_page = SITE / '404.html'
+if error_page.is_file():
+    (out / '404.html').write_text(rewrite_assets(error_page.read_text(encoding='utf-8'), fingerprints), encoding='utf-8')
 (out / 'robots.txt').write_text('User-agent: *\nDisallow: /\n' if args.preview else f'User-agent: *\nAllow: /\nSitemap: https://{domain}/sitemap.xml\n', encoding='utf-8')
 root = Element('urlset', xmlns='http://www.sitemaps.org/schemas/sitemap/0.9')
 for rel in PAGES:

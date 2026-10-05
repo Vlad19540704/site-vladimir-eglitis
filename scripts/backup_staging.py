@@ -1,4 +1,4 @@
-"""Encrypt an off-server staging backup and verify a full test restore.
+"""Encrypt an off-server backup of the active server files and test restoration.
 
 The backup contains only public site assets, the active Caddyfile, and the
 deployment runbook. Its AES-256 key stays outside Git and OneDrive.
@@ -15,6 +15,8 @@ import subprocess
 import sys
 import tarfile
 import tempfile
+import re
+import stat
 from datetime import datetime, timezone
 from pathlib import Path, PurePosixPath
 
@@ -35,17 +37,41 @@ def main() -> None:
     parser.add_argument("host")
     parser.add_argument("fingerprint")
     parser.add_argument("private_key_file", type=Path)
+    parser.add_argument("--production", action="store_true")
     args = parser.parse_args()
 
     repo = Path(__file__).resolve().parents[1]
-    revision = subprocess.check_output(["git", "rev-parse", "--short=12", "HEAD"], cwd=repo, text=True).strip()
-    site = repo / "site"
-    files = {
-        "site/" + path.relative_to(site).as_posix(): path.read_bytes()
-        for path in site.rglob("*")
-        if path.is_file() and (path.suffix.lower() in ALLOWED_SUFFIXES or path.name == "robots.txt")
-    }
     client = connect(args.host, "deploy", args.private_key_file, args.fingerprint)
+    active = '/srv/site/current' if args.production else '/srv/site/staging/current'
+    revision = PurePosixPath(run(client, 'readlink ' + active).strip()).name
+    if not re.fullmatch(r'[0-9a-f]{12}', revision):
+        raise SystemExit('Unexpected active server revision')
+    files = {}
+    sftp = client.open_sftp()
+    try:
+        def download(directory, relative=''):
+            for item in sftp.listdir_attr(directory):
+                if item.filename in ('.', '..') or '/' in item.filename:
+                    raise SystemExit('Unsafe server filename')
+                remote = directory + '/' + item.filename
+                rel = relative + item.filename
+                if stat.S_ISDIR(item.st_mode):
+                    download(remote, rel + '/')
+                elif stat.S_ISREG(item.st_mode):
+                    with sftp.open(remote, 'rb') as source:
+                        files['site/' + rel] = source.read()
+                else:
+                    raise SystemExit('Unexpected symlink or special file in release')
+        download(active)
+    finally:
+        sftp.close()
+    if args.production:
+        remote_manifest = json.loads(files['site/release-manifest.json'])
+        if not remote_manifest['revision'].startswith(revision):
+            raise SystemExit('Server revision and manifest disagree')
+        for rel, expected in remote_manifest['files'].items():
+            if hashlib.sha256(files['site/' + rel]).hexdigest() != expected:
+                raise SystemExit('Active production checksum mismatch: ' + rel)
     files["server/Caddyfile"] = run(client, "sudo -n cat /etc/caddy/Caddyfile").encode("utf-8") + b"\n"
     client.close()
     files["docs/RUNBOOK.md"] = (repo / "deploy" / "RUNBOOK.md").read_bytes()
@@ -77,7 +103,8 @@ def main() -> None:
     backup_dir.mkdir(exist_ok=True)
     nonce = secrets.token_bytes(12)
     encrypted = MAGIC + nonce + AESGCM(key).encrypt(nonce, archive.getvalue(), AAD)
-    backup_path = backup_dir / f"staging-{revision}-{datetime.now(timezone.utc):%Y%m%dT%H%M%SZ}.sitebak"
+    environment = 'production' if args.production else 'staging'
+    backup_path = backup_dir / f"{environment}-{revision}-{datetime.now(timezone.utc):%Y%m%dT%H%M%SZ}.sitebak"
     backup_path.write_bytes(encrypted)
 
     # Read the saved artifact, decrypt it, restore to an isolated directory,

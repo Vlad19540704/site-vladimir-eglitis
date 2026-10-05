@@ -47,6 +47,12 @@ def enrich(soup, rel, domain, site, published_on=None):
         with Image.open(source) as source_image:
             image['width'], image['height'] = map(str, source_image.size)
         image['decoding'] = 'async'
+        if 'portrait-photo' in image.get('class', []):
+            prefix = '../' if rel.startswith('articles/') else ''
+            image['srcset'] = ', '.join(f'{prefix}assets/portrait-v1-{w}.webp {w}w' for w in (480, 800)) + f', {prefix}assets/portrait-v1.webp 1143w'
+            image['sizes'] = '(max-width: 660px) calc(100vw - 36px), (max-width: 920px) 40vw, 500px'
+        if rel == 'index.html':
+            image['loading'] = 'lazy'
 
     person = {'@type': 'Person', '@id': base + '/about.html#author',
               'name': 'Владимир Эглитис', 'url': base + '/about.html'}

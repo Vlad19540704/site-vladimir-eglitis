@@ -352,6 +352,12 @@ body{font-size:19px;line-height:1.62}
 }
 
 /* Comfortable reading size without changing the approved headline hierarchy. */
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+main:focus{outline:none}
+.header-cta{background:#806342;color:#fff}
+.header-cta:hover{background:#806342}
+.method-grid span{color:#c5b08e}
+.booking-grid span{color:#6c5439}
 body{font-size:21px;line-height:1.6}
 .problem-section p,.about-section p,.consultation-section p,.inner-hero p,
 .readable p,.readable li,.article-list p,.price-row p,.about-practice p,

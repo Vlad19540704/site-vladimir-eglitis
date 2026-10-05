@@ -6,8 +6,13 @@ SITE_DOMAIN {
         X-Content-Type-Options nosniff
         Referrer-Policy strict-origin-when-cross-origin
         X-Frame-Options DENY
+        Strict-Transport-Security "max-age=15552000"
         -Server
     }
+    @assets path /assets/*
+    header @assets Cache-Control "public, max-age=31536000, immutable"
+    @html not path /assets/*
+    header @html Cache-Control "no-cache"
     @hidden path /.git/* /.env* /deploy/* /scripts/* /Caddyfile*
     respond @hidden 404
     @manifest path /release-manifest.json
@@ -15,6 +20,10 @@ SITE_DOMAIN {
     @index path /index.html
     redir @index / 308
     file_server
+    handle_errors 404 {
+        rewrite * /404.html
+        file_server
+    }
     # No per-request access log until the data policy and retention are approved.
 }
 

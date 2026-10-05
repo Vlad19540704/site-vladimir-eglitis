@@ -3,6 +3,7 @@
 import argparse
 import hashlib
 import json
+import re
 from pathlib import Path
 from urllib.parse import urlparse
 from xml.etree import ElementTree
@@ -13,7 +14,7 @@ from bs4 import BeautifulSoup
 def verify(root, site):
     manifest = json.loads((root / 'release-manifest.json').read_text(encoding='utf-8'))
     base = 'https://' + manifest['domain']
-    pages = sorted(root.rglob('*.html'))
+    pages = sorted(path for path in root.rglob('*.html') if path.name != '404.html')
     assert len(pages) == 10, 'Expected ten release pages'
     titles, descriptions, urls = set(), set(), set()
     for path in pages:
@@ -57,6 +58,9 @@ def verify(root, site):
     assert actual_files == set(manifest['files']), 'Missing or unexpected artifact files'
     for rel, digest in manifest['files'].items():
         assert hashlib.sha256((root / rel).read_bytes()).hexdigest() == digest, rel
+        if rel.startswith('assets/'):
+            fingerprint = re.search(r'\.([a-f0-9]{12})\.[^.]+$', rel)
+            assert fingerprint and fingerprint.group(1) == digest[:12], 'Unsafe cached asset: ' + rel
     return manifest
 
 
