@@ -8,4 +8,5 @@ node_modules/
 site/.well-known/
 release/
 release_approval.json
+service_approval.json
 output/

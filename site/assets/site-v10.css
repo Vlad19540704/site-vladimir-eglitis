@@ -379,3 +379,29 @@ body{font-size:21px;line-height:1.6}
   .medical-boundary p,.contact-page>p,.medical-copy p{font-size:20px}
   .hero-sub{font-size:21px}
 }
+
+/* Consent controls belong to the same quiet palette as the approved site. */
+.privacy-banner{position:fixed;z-index:25;right:20px;bottom:20px;width:min(690px,calc(100% - 40px));padding:24px;background:var(--cream);color:var(--ink);border:1px solid #806342;border-radius:10px;box-shadow:0 8px 36px #29271f30}
+.privacy-banner h2{font-size:30px;line-height:1.15;margin-bottom:12px}
+.privacy-banner p,.privacy-dialog p,.consent-option{font-size:19px;line-height:1.5}
+.consent-actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:18px}
+.consent-button{font:inherit;font-size:17px;min-height:46px;padding:10px 18px;border:1px solid #806342;border-radius:30px;background:transparent;color:#29261f;cursor:pointer}
+.consent-button:hover{background:#d8c5ac}
+.consent-save{background:#806342;color:white}
+.consent-save:hover{background:#6c5439}
+.privacy-dialog{width:min(720px,calc(100% - 36px));max-height:calc(100dvh - 36px);padding:30px;border:1px solid #806342;border-radius:10px;background:var(--cream);color:var(--ink)}
+.privacy-dialog::backdrop{background:#29271fb3}
+.privacy-dialog h2{font-size:34px;margin-bottom:18px}
+.privacy-dialog h3{font-size:28px}
+.consent-option{display:flex;align-items:flex-start;gap:13px;cursor:pointer}
+.consent-option input{flex:none;width:22px;height:22px;margin-top:4px;accent-color:#806342}
+.consent-option input:focus-visible{outline:3px solid #806342;outline-offset:4px}
+.consent-detail{margin-top:10px}
+.chat-consent{border-top:1px solid var(--line);margin-top:22px;padding-top:20px}
+.consent-error{color:#7d351f;font-weight:600;margin-top:12px}
+.footer-privacy-settings,.site-chat-trigger{font:inherit;background:transparent;color:inherit;border:0;padding:0;cursor:pointer;text-decoration:underline;text-underline-offset:4px}
+.footer-privacy-settings{font-size:14px;margin-left:16px}
+.site-chat-trigger{display:block;margin-top:14px;font-size:18px}
+.service-status{font-size:18px;margin-top:12px;max-width:500px}
+.service-status:empty{display:none}
+@media(max-width:660px){.privacy-banner{right:12px;bottom:12px;width:calc(100% - 24px);padding:18px}.privacy-dialog{padding:22px}.privacy-banner h2{font-size:27px}.privacy-dialog h2{font-size:30px}.privacy-banner p,.privacy-dialog p,.consent-option{font-size:18px}.footer-privacy-settings{display:block;margin:10px 0 0}.consent-button{font-size:16px;padding:10px 15px}}

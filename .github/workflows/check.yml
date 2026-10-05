@@ -20,6 +20,7 @@ jobs:
       - run: npm install --prefix output/qa-tools --no-save axe-core@4.13.0
       - run: python -m compileall -q scripts
       - run: python scripts/test_release_safety.py
+      - run: python scripts/test_service_consent.py
       - run: |
           python -m http.server 8080 --bind 127.0.0.1 --directory site > /tmp/site-preview.log 2>&1 &
           python scripts/verify_site.py

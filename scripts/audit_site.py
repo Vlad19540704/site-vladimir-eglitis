@@ -48,6 +48,8 @@ def audit(base, output, engines, clicks=True, quick=False):
                     page.set_viewport_size({'width':width,'height':height})
                     for route in PAGES:
                         page.goto(urljoin(base,route), wait_until='load')
+                        reject = page.locator('.privacy-banner .consent-reject')
+                        if reject.count(): reject.click()
                         for image in page.locator('img').all():
                             image.scroll_into_view_if_needed()
                             image.evaluate('el=>el.decode()')
@@ -100,6 +102,8 @@ def audit(base, output, engines, clicks=True, quick=False):
                         for route in PAGES:
                             current=urljoin(base,route)
                             page.goto(current,wait_until='load')
+                            reject = page.locator('.privacy-banner .consent-reject')
+                            if reject.count(): reject.click()
                             count=page.locator('a[href]').count()
                             for index in range(count):
                                 page.goto(current,wait_until='load')

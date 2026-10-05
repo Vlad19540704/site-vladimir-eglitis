@@ -18,6 +18,7 @@ from bs4 import BeautifulSoup
 from seo_metadata import enrich
 from git_release_guard import published_revision
 from asset_fingerprints import asset_map, rewrite_assets
+from service_config import service_config, embed_service_config
 
 sys.stdout.reconfigure(encoding='utf-8')
 
@@ -30,6 +31,7 @@ ASSETS = ['site-v10.css', 'site-v08.js', 'hero-sunset-v1.webp', 'shore.webp',
           'desk.webp', 'book.webp', 'portrait-v1.webp', 'favicon.svg',
           'icon-telegram.svg', 'icon-whatsapp.svg', 'icon-max.svg']
 ASSETS += ['portrait-v1-480.webp', 'portrait-v1-800.webp']
+ASSETS += ['services-v1.js']
 REQUIRED = ['domain_owned', 'public_launch_approved', 'contacts_verified', 'real_photo_approved',
             'ruble_terms_verified', 'education_verified', 'about_text_approved', 'legal_terms_approved', 'privacy_policy_approved',
             'article_dates_confirmed', 'visual_approved']
@@ -87,6 +89,7 @@ if out.exists():
     shutil.rmtree(out)
 out.mkdir(parents=True)
 fingerprints = asset_map(SITE, ASSETS)
+services = service_config(ROOT, args.preview)
 for rel in PAGES:
     source = SITE / rel
     dest = out / rel
@@ -109,6 +112,7 @@ for rel in PAGES:
         if 'Предпубликационная версия' in node and not args.preview:
             node.replace_with(node.replace(' · Предпубликационная версия', '').replace('Предпубликационная версия', ''))
     enrich(soup, rel, domain, SITE, None if args.preview else published_on)
+    embed_service_config(soup, services)
     for link in soup.select('a[href]'):
         if link['href'] in ('index.html', '../index.html'):
             link['href'] = '/'
