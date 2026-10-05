@@ -41,7 +41,7 @@ WhatsApp Coexistence может сохранить работу номера в 
 - [Требования установки](https://doc.livehelperchat.com/docs/install).
 - [Примеры ресурсов](https://doc.livehelperchat.com/docs/hosting-variations).
 
-## Подготовленный запрос tawk.to, пока НЕ отправлен
+## Запрос tawk.to — отправлен с разрешения владельца
 
 Hello. We need a permanently free unified inbox for website live chat, a Telegram bot and official WhatsApp Business (Facebook Messenger later), for a Russian-language alcohol-dependency counselling website serving EU/EEA visitors. No AI, marketing templates or paid add-ons.
 
@@ -51,7 +51,9 @@ Hello. We need a permanently free unified inbox for website live chat, a Telegra
 
 Please answer before registration. No customer data will be sent during evaluation.
 
-Отправка новому внешнему адресату требует разрешения владельца. Разрешение на предыдущий запрос касалось поддержки Jivo.
+Владелец явно ответил «Да, отправь запрос в tawk.to». Запрос отправлен 5 октября в официальный чат www.tawk.to без контактов владельца, домена, ключей и клиентских данных. После ответа AI-помощника Apollo нажата штатная передача живому оператору; чат показывает «You're being transferred» и обещает подключить оператора. Ответ человека пока не получен. Ответ AI о договорном охвате не считать подтверждением поставщика; его устаревшее описание оплаты WhatsApp не заменяет актуальные тарифы Meta.
+
+Доказательство отправки сохранено локально в игнорируемом `output/tawk-support-sent.jpg` и показано владельцу. Первый CI этой исследовательской ветки `37331441082` завершился успешно. Опубликованный сайт не менялся.
 
 ## Состояние остальной работы
 
