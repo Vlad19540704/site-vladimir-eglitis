@@ -12,6 +12,7 @@ import io
 import json
 import secrets
 import subprocess
+import sys
 import tarfile
 import tempfile
 from datetime import datetime, timezone
@@ -20,6 +21,8 @@ from pathlib import Path, PurePosixPath
 from cryptography.hazmat.primitives.ciphers.aead import AESGCM
 
 from provision_vps_access import connect, run
+
+sys.stdout.reconfigure(encoding='utf-8')
 
 
 MAGIC = b"SITEBACKUP1"

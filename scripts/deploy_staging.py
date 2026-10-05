@@ -9,6 +9,7 @@ import subprocess
 from pathlib import Path
 
 from provision_vps_access import connect, run
+from git_release_guard import published_revision
 
 
 ALLOWED_SUFFIXES = {".html", ".css", ".js", ".svg", ".webp", ".png", ".jpg", ".jpeg"}
@@ -23,10 +24,7 @@ def main() -> None:
 
     repo = Path(__file__).resolve().parents[1]
     site = repo / "site"
-    dirty = subprocess.check_output(["git", "status", "--porcelain"], cwd=repo, text=True)
-    if dirty.strip():
-        raise SystemExit("Commit and verify changes before staging deployment")
-    revision = subprocess.check_output(["git", "rev-parse", "--short=12", "HEAD"], cwd=repo, text=True).strip()
+    revision = published_revision(repo)[:12]
     files = sorted(
         path for path in site.rglob("*")
         if path.is_file() and (path.suffix.lower() in ALLOWED_SUFFIXES or path.name == "robots.txt")
@@ -63,6 +61,8 @@ def main() -> None:
         total += len(data)
     sftp.close()
     run(client, f"mv -T {temporary} {release} && ln -sfn {release} {root}/current.next && mv -Tf {root}/current.next {root}/current")
+    if run(client, f"readlink {root}/current") != release:
+        raise SystemExit('Server release differs from the published GitHub commit')
     print(f"Staging release {revision}: {len(files)} files, {total} bytes, upload hashes verified")
     print(run(client, "curl -fsSI http://127.0.0.1:8081/ | head -n 12"))
     client.close()

@@ -1,13 +1,13 @@
 {
   "domain_owned": true,
-  "public_launch_approved": false,
+  "public_launch_approved": true,
   "contacts_verified": true,
   "real_photo_approved": true,
   "ruble_terms_verified": true,
-  "education_verified": false,
-  "about_text_approved": false,
-  "legal_terms_approved": false,
-  "privacy_policy_approved": false,
-  "article_dates_confirmed": false,
-  "visual_approved": false
+  "education_verified": true,
+  "about_text_approved": true,
+  "legal_terms_approved": true,
+  "privacy_policy_approved": true,
+  "article_dates_confirmed": true,
+  "visual_approved": true
 }

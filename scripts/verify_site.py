@@ -2,6 +2,7 @@ from pathlib import Path
 from urllib.parse import urlparse, unquote
 import subprocess
 import sys
+import os
 from bs4 import BeautifulSoup
 from playwright.sync_api import sync_playwright
 
@@ -74,7 +75,7 @@ check({a['href'] for a in home.select('.hero-direct a')} == primary, 'home: prim
 check({a['href'] for a in contact.select('.primary-channels a')} == primary, 'contact: primary messengers differ')
 check(home.select_one('.hero h1').get_text(' ', strip=True) == 'Есть место, где можно говорить честно.', 'home: approved hero headline changed')
 check(len(home.select('.article-grid article')) == 2, 'home: wrong article count')
-check(home.select_one('.about-section img.portrait-photo[src="assets/portrait-v1.png"]') is not None, 'home: approved portrait missing')
+check(home.select_one('.about-section img.portrait-photo[src="assets/portrait-v1.webp"]') is not None, 'home: approved portrait missing')
 check(not home.select_one('.hero-more, .about-quote'), 'home: removed links or quote returned')
 check('Для клиентов из России стоимость указана в рублях. Оплата через Сбер.' not in home.get_text(' ', strip=True), 'home: removed price sentence returned')
 check(len(BeautifulSoup((SITE / 'articles.html').read_text(encoding='utf-8'), 'html.parser').select('.article-list img')) == 2, 'articles: card covers missing')
@@ -83,7 +84,7 @@ about = BeautifulSoup((SITE / 'about.html').read_text(encoding='utf-8'), 'html.p
 approach = BeautifulSoup((SITE / 'approach.html').read_text(encoding='utf-8'), 'html.parser')
 about_text = about.select_one('main').get_text(' ', strip=True)
 approach_text = approach.select_one('main').get_text(' ', strip=True)
-check(about.select_one('.about-story img.portrait-photo[src="assets/portrait-v1.png"]') is not None, 'about: approved portrait missing')
+check(about.select_one('.about-story img.portrait-photo[src="assets/portrait-v1.webp"]') is not None, 'about: approved portrait missing')
 check('Сообщество Анонимных Алкоголиков занимает важное место' not in about_text, 'about: removed AA paragraph returned')
 check(not contact.select('.primary-channels small'), 'contact: visible phone numbers returned')
 check('wrap' in contact.select_one('.contact-page').get('class', []), 'contact: main section not aligned to site grid')
@@ -111,7 +112,8 @@ for path in PAGES:
     check(len(page.select('.footer-channels .messenger-icon')) == 3, f'{path.name}: messenger icons missing')
 
 with sync_playwright() as p:
-    browser = p.chromium.launch(executable_path=r'C:\Program Files\Google\Chrome\Application\chrome.exe', headless=True)
+    chrome = os.environ.get('CHROME_EXECUTABLE_PATH', r'C:\Program Files\Google\Chrome\Application\chrome.exe')
+    browser = p.chromium.launch(executable_path=chrome if Path(chrome).is_file() else None, headless=True)
     for width, height in [(1440,900),(768,1024),(390,844),(320,700)]:
         page = browser.new_page(viewport={'width':width,'height':height})
         for path in PAGES:

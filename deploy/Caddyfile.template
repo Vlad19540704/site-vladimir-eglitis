@@ -8,8 +8,24 @@ SITE_DOMAIN {
         X-Frame-Options DENY
         -Server
     }
-    @hidden path /.git/* /.env* /deploy/* /scripts/*
+    @hidden path /.git/* /.env* /deploy/* /scripts/* /Caddyfile*
     respond @hidden 404
+    @manifest path /release-manifest.json
+    respond @manifest 404
+    @index path /index.html
+    redir @index / 308
     file_server
     # No per-request access log until the data policy and retention are approved.
+}
+
+www.SITE_DOMAIN {
+    redir https://SITE_DOMAIN{uri} 308
+}
+
+http://127.0.0.1:8081 {
+    root * /srv/site/staging/current
+    header X-Robots-Tag "noindex, nofollow"
+    @hidden path /.git/* /.env* /deploy/* /scripts/* /release-manifest.json
+    respond @hidden 404
+    file_server
 }
