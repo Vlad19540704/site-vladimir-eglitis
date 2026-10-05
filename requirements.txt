@@ -1,0 +1,4 @@
+beautifulsoup4==4.15.0
+Pillow==11.2.1
+playwright==1.63.0
+paramiko==5.0.0

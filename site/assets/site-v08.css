@@ -10,3 +10,18 @@ h1,h2,h3,.brand,.footer-name{font-family:Georgia,"Times New Roman",serif;font-we
 
 /* Two published cards: balanced editorial presentation */
 @media(min-width:720px){.article-grid:has(>article:nth-child(2):last-child){grid-template-columns:repeat(2,minmax(0,1fr));max-width:850px}}
+
+/* Prepublication refinements matched to the approved warm composition. */
+.head-row{min-height:84px}.nav{gap:28px;font-size:14px}.nav>a{display:inline-flex;align-items:center;min-height:44px}
+.nav>a[aria-current="page"]{text-decoration:underline;text-underline-offset:8px}
+.hero,.hero-wrap{min-height:525px}.hero-copy{max-width:610px}.hero-desc{max-width:460px}
+.section{padding:63px 0}.visual{height:285px}.desk{height:305px}
+.portrait-placeholder{background:#4b483b;border:1px solid #867c69;min-height:305px;font-size:20px}
+.article-grid:has(>article:nth-child(2):last-child){max-width:none}
+.article-grid img{height:190px}.article-grid h3{max-width:28ch}
+.readable{width:min(770px,calc(100% - 44px))}
+.price-list{width:min(840px,calc(100% - 44px))}
+.nav a:focus-visible,.pill:focus-visible,.text-link:focus-visible{outline:3px solid #d7a25d;outline-offset:4px}
+.contact-actions .contact-secondary{color:#47331f;min-height:44px;display:inline-flex;align-items:center;margin-top:0;width:auto;padding:4px 8px}
+@media(max-width:920px){.nav{gap:0}.nav>a{min-height:48px;padding:8px 0}}
+@media(max-width:660px){h1{font-size:clamp(39px,11vw,50px)}.hero,.hero-wrap{min-height:560px}.section{padding:49px 0}.readable,.price-list{width:calc(100% - 34px)}.price-row{grid-template-columns:1fr;gap:4px}.price-row .amount{font-size:22px}.article-grid img{height:170px}.footer-grid{gap:20px}}

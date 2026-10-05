@@ -6,3 +6,6 @@ __pycache__/
 node_modules/
 .DS_Store
 site/.well-known/
+release/
+release_approval.json
+output/
