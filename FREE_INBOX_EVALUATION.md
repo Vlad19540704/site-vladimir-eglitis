@@ -1,0 +1,60 @@
+# Бесплатный единый кабинет — проверка 5 октября 2026
+
+## Решение владельца
+
+Нужен общий кабинет: чат сайта, Telegram, WhatsApp; позже Facebook и по возможности VK. Платные подписки и новый платный сервер исключены прямым решением владельца. Предложение Chatwoot на отдельном сервере Hetzner отменено; сервер не покупался, аккаунт не создавался, сайт не менялся.
+
+Текущий production и master: `95b0a848ec48f9c2c3f13d9d286fdb8d8ab501d4`. Эта ветка содержит исследование, без изменений опубликованного сайта.
+
+## Основной кандидат: tawk.to
+
+Официальная страница продукта обещает бесплатный Omnichannel Inbox. Документация подтверждает сайт, Telegram-бота, WhatsApp Business и Facebook Messenger. VK/MAX среди подтверждённых интеграций не найдены; обещать их поддержку нельзя.
+
+- [Продукт и бесплатный кабинет](https://www.tawk.to/products/inbox/).
+- [Telegram](https://help.tawk.to/article/connecting-your-telegram-bot-to-tawkto).
+- [WhatsApp](https://help.tawk.to/article/connecting-whatsapp-to-tawkto).
+- [Coexistence с WhatsApp Business App](https://help.tawk.to/article/connecting-whatsapp-to-tawkto-with-whatsapp-coexistence).
+- [Список каналов и Facebook Messenger](https://help.tawk.to/).
+
+WhatsApp Coexistence может сохранить работу номера в Business App, если Meta признает аккаунт подходящим. Личный WhatsApp не равен Business App. Не удалять аккаунт, не переносить историю/контакты, не менять текущий номер автоматически. Перед подключением проверить реальный статус и доступный режим. Сообщения из кабинета идут через Cloud API: бесплатные ответы в 24-часовое окно не означают бесплатность всех сообщений. Платные шаблоны, рассылки, пополнение и платные дополнения не включать.
+
+- [Тарифы Meta](https://whatsappbusiness.com/products/platform-pricing/).
+
+### Что ещё не подтверждено
+
+1. У tawk.to данные в покое хранятся в США; это не вариант с хранением исключительно в ЕС. Компания публикует DPA и положения о передаче европейских данных. Само наличие DPA не доказывает пригодность конкретного сценария.
+2. Annex I.C DPA перечисляет контактные поля, но не содержит явного описания содержания переписки и добровольно сообщённых сведений о здоровье. Политика приватности отдельно упоминает явное согласие для чувствительных сведений. Требуется уточнить договорный охват перед публикацией чата по теме зависимости, а не выдавать собственное толкование за подтверждение поставщика.
+3. Требуется проверить в реальном бесплатном аккаунте отключение AI, платных опций, уведомлений с содержимым сообщений, режим явного согласия и настройки удаления. Документация сообщает хранение до запроса удаления; автоматический срок не подтверждён.
+4. Регистрация, принятие договора и новые права подключения ещё не выполнены. Токен Telegram никому не передан. Текущие личные ссылки остаются рабочими.
+
+- [Хранение в США и сроки](https://help.tawk.to/article/where-and-how-do-we-host-our-data).
+- [DPA, Annex I.C и европейские передачи](https://www.tawk.to/data-protection/dpa-data-processing-addendum/).
+- [Чувствительные сведения и согласие](https://www.tawk.to/privacy-policy/).
+- [Условия сервиса](https://www.tawk.to/terms-of-service/).
+- [Форма согласия](https://help.tawk.to/article/enabling-and-managing-your-consent-form).
+
+## Альтернатива без новой подписки: Live Helper Chat
+
+Бесплатное открытое ПО, PHP/MySQL, интеграции Telegram и официального WhatsApp/Facebook. Можно рассматривать размещение на существующем VPS, но работоспособность в его ограничениях не доказана. На сервере сейчас 961 MiB RAM, 613 MiB доступны, 5.5 GiB свободного диска, swap отсутствует (проверено SSH только чтением). Официальный пример для небольшого production использует 2 GB. Установка без измерения потребления и проверки восстановления может повредить стабильности сайта; не считать этот вариант готовым или гарантированно достаточным.
+
+- [Возможности](https://livehelperchat.com/esp).
+- [Требования установки](https://doc.livehelperchat.com/docs/install).
+- [Примеры ресурсов](https://doc.livehelperchat.com/docs/hosting-variations).
+
+## Подготовленный запрос tawk.to, пока НЕ отправлен
+
+Hello. We need a permanently free unified inbox for website live chat, a Telegram bot and official WhatsApp Business (Facebook Messenger later), for a Russian-language alcohol-dependency counselling website serving EU/EEA visitors. No AI, marketing templates or paid add-ons.
+
+1. Are those channels available without a tawk.to subscription or integration fee, with only Meta's own optional messaging charges?
+2. Does your DPA cover chat contents and potentially volunteered health information? Annex I.C currently lists contact fields only. Please point to the contractual scope and safeguards permitting this use.
+3. Can we turn off AI processing, message previews in external notifications and visitor tracking before explicit consent, and apply a defined retention period?
+
+Please answer before registration. No customer data will be sent during evaluation.
+
+Отправка новому внешнему адресату требует разрешения владельца. Разрешение на предыдущий запрос касалось поддержки Jivo.
+
+## Состояние остальной работы
+
+GA4 уже опубликован из master `95b0a84`, CI успешен, 27 хэшей совпали. Реальный Google endpoint ответил HTTP 204 на `page_view` и `contact_click`; запросов до согласия нет, отказ сохраняется, отзыв останавливает запросы и очищает cookies. Jivo не загружается. Отображение в кабинете GA4 остаётся отдельной проверкой после обработки Google; HTTP 204 не выдавать за готовность отчётов. Яндекс остаётся на паузе.
+
+После выбора и подходящего договора: конфигурация → отдельное согласие → тест получения/ответа по каждому каналу → тест отказа/отзыва и мобильного UI → commit/push/CI → развёртывание того же коммита → сверка серверных хэшей. Секреты, переписка и доступы в Git не попадают.
