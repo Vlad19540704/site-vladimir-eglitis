@@ -12,7 +12,7 @@ SITE = ROOT / 'site'
 PAGES = sorted(path for path in SITE.glob('*.html') if path.name != '404.html') + sorted((SITE / 'articles').glob('*.html'))
 BASELINE = '68a8d59'
 CONTACT_URLS = {
-    'https://wa.me/358466170891',
+    'https://wa.me/79811881562',
     'mailto:eglvlad2025@outlook.com',
     'https://max.ru/u/f9LHodD0cOJ57eetEyicu--mDK2NszjKeeEYBEHcl7uGccaQ9irTHc0Jg6k',
     'https://t.me/eglitisonline_contact_bot',
@@ -72,7 +72,7 @@ home = BeautifulSoup((SITE / 'index.html').read_text(encoding='utf-8'), 'html.pa
 contact = BeautifulSoup((SITE / 'contact.html').read_text(encoding='utf-8'), 'html.parser')
 primary = {
     'https://t.me/eglitisonline_contact_bot',
-    'https://wa.me/358466170891',
+    'https://wa.me/79811881562',
     'https://max.ru/u/f9LHodD0cOJ57eetEyicu--mDK2NszjKeeEYBEHcl7uGccaQ9irTHc0Jg6k',
 }
 check({a['href'] for a in home.select('.hero-direct a')} == primary, 'home: primary messengers differ')

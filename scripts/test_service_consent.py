@@ -155,7 +155,7 @@ class BrowserConsent(unittest.TestCase):
         self.page.locator('a[href^="https://wa.me/"]').first.click()
         layer = self.page.evaluate('Array.from(window.dataLayer, v=>Array.from(v))')
         serialized = json.dumps(layer, default=str)
-        for private in ('private@example', 'health-history', '358466170891', 'wa.me', 'link_url'):
+        for private in ('private@example', 'health-history', '358466170891', '79811881562', 'wa.me', 'link_url'):
             self.assertNotIn(private, serialized)
         events = [v for v in layer if v[0] == 'event']
         self.assertEqual(events[0][1], 'page_view')
