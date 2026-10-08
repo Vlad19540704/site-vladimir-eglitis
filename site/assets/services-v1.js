@@ -32,11 +32,12 @@
   let pendingChat = false;
   let opener = null;
   let loadTimeout;
+  let chatLauncher;
 
   const privacyLink = '/privacy.html#services';
   const status = document.createElement('p');
   status.className = 'service-status'; status.setAttribute('role', 'status');
-  document.querySelector('.footer-contact')?.append(status);
+  document.body.append(status);
   const announce = message => { status.textContent = message; };
 
   const store = analytics => {
@@ -174,6 +175,7 @@
     window.Tawk_API = window.Tawk_API || {};
     window.Tawk_API.onLoad = () => {
       clearTimeout(loadTimeout); chatLoaded = true; chatLoading = false;
+      if (chatLauncher) chatLauncher.hidden = true;
       window.Tawk_API.showWidget(); window.Tawk_API.maximize(); announce('');
     };
     const tag = document.createElement('script'); tag.async = true;
@@ -203,7 +205,12 @@
       button.addEventListener('click', e => chatLoaded ? (window.Tawk_API.showWidget(), window.Tawk_API.maximize()) : openDialog(true, e.currentTarget));
       return button;
     };
-    document.querySelector('.footer-contact')?.append(makeChatButton());
+    chatLauncher = makeChatButton();
+    chatLauncher.classList.add('chat-launcher');
+    chatLauncher.setAttribute('aria-haspopup', 'dialog');
+    chatLauncher.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M21 11.5a8.5 8.5 0 0 1-8.5 8.5 9.5 9.5 0 0 1-4-.9L3 21l1.9-5.5a9.5 9.5 0 0 1-.9-4A8.5 8.5 0 0 1 12.5 3H13a8.5 8.5 0 0 1 8 8v.5Z"/><path d="M8 11h8M8 15h5"/></svg><span>Чат на сайте</span>';
+    document.body.classList.add('has-site-chat');
+    document.body.append(chatLauncher);
     document.querySelector('main .contact-email')?.after(makeChatButton());
   }
   document.addEventListener('click', e => {

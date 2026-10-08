@@ -117,6 +117,36 @@ class BrowserConsent(unittest.TestCase):
         self.assertEqual(self.requests, [])
         self.assertFalse(self.page.locator('.privacy-banner').count())
 
+    def test_chat_launcher_visible_on_every_page_without_sdk(self):
+        pages = ('/', '/about.html', '/approach.html', '/prices.html', '/articles.html',
+                 '/contact.html', '/privacy.html', '/terms.html',
+                 '/articles/kak-ponyat-problemu.html', '/articles/kak-brosit-pit.html')
+        for width in (320, 390, 768, 1440):
+            self.page.set_viewport_size(dict(width=width, height=844))
+            for path in pages:
+                self.go(path)
+                launcher = self.page.locator('.chat-launcher')
+                self.assertEqual(launcher.count(), 1)
+                self.assertTrue(launcher.is_visible())
+                before = launcher.bounding_box()
+                self.assertGreaterEqual(before['x'], 0)
+                self.assertLessEqual(before['x'] + before['width'], width)
+                self.assertGreaterEqual(before['height'], 44)
+                self.assertLessEqual(before['y'] + before['height'], 844)
+                banner = self.page.locator('.privacy-banner')
+                if banner.count():
+                    rect = banner.bounding_box()
+                    self.assertLessEqual(rect['y'] + rect['height'], before['y'])
+                self.page.evaluate('window.scrollTo(0, document.body.scrollHeight)')
+                self.assertAlmostEqual(launcher.bounding_box()['y'], before['y'], delta=1)
+                self.page.screenshot(path=str(self.evidence / f'launcher-{width}.png'))
+                launcher.click()
+                self.assertTrue(self.page.locator('dialog').is_visible())
+                self.assertFalse(self.page.locator('#chat-choice').is_checked())
+                self.page.keyboard.press('Escape')
+                self.assertTrue(launcher.evaluate('e=>e===document.activeElement'))
+                self.assertEqual(self.requests, [])
+
     def test_analytics_redacts_url_referrer_and_contact_fields(self):
         self.go('/contact.html?email=private@example.com#health-history')
         self.page.get_by_role('button', name='Разрешить', exact=True).click()
@@ -192,6 +222,7 @@ class BrowserConsent(unittest.TestCase):
         self.page.locator('#chat-choice').check()
         self.page.get_by_role('button', name='Открыть чат', exact=True).click()
         self.page.wait_for_function('window.chatOpened')
+        self.assertFalse(self.page.locator('.chat-launcher').is_visible())
         self.assertEqual(self.page.url, 'https://eglitisonline.com/contact.html')
         self.assertFalse(any('jivosite' in v for v in self.requests))
         self.assertEqual(len(self.requests), 1)
