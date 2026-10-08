@@ -12,7 +12,7 @@ PAGES = sorted(SITE.glob('*.html')) + sorted((SITE / 'articles').glob('*.html'))
 WHATSAPP = 'https://wa.me/358466170891'
 EMAIL = 'mailto:eglvlad2025@outlook.com'
 MAX = 'https://max.ru/u/f9LHodD0cOJ57eetEyicu--mDK2NszjKeeEYBEHcl7uGccaQ9irTHc0Jg6k'
-TELEGRAM = 'https://t.me/+358466170891'
+TELEGRAM = 'https://t.me/eglitisonline_contact_bot'
 
 for path in PAGES:
     article = path.parent.name == 'articles'

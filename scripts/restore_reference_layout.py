@@ -9,7 +9,7 @@ from bs4 import BeautifulSoup
 
 SITE = Path(__file__).resolve().parents[1] / "site"
 PAGES = sorted(SITE.glob("*.html")) + sorted((SITE / "articles").glob("*.html"))
-TELEGRAM = "https://t.me/+358466170891"
+TELEGRAM = "https://t.me/eglitisonline_contact_bot"
 WHATSAPP = "https://wa.me/358466170891"
 MAX = "https://max.ru/u/f9LHodD0cOJ57eetEyicu--mDK2NszjKeeEYBEHcl7uGccaQ9irTHc0Jg6k"
 EMAIL = "mailto:eglvlad2025@outlook.com"

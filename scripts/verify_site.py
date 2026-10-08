@@ -15,7 +15,7 @@ CONTACT_URLS = {
     'https://wa.me/358466170891',
     'mailto:eglvlad2025@outlook.com',
     'https://max.ru/u/f9LHodD0cOJ57eetEyicu--mDK2NszjKeeEYBEHcl7uGccaQ9irTHc0Jg6k',
-    'https://t.me/+358466170891',
+    'https://t.me/eglitisonline_contact_bot',
 }
 PRIVACY_URLS = {
     'https://www.tawk.to/data-protection/dpa-data-processing-addendum/',
@@ -71,7 +71,7 @@ check('Disallow: /' in (SITE / 'robots.txt').read_text(), 'staging robots allows
 home = BeautifulSoup((SITE / 'index.html').read_text(encoding='utf-8'), 'html.parser')
 contact = BeautifulSoup((SITE / 'contact.html').read_text(encoding='utf-8'), 'html.parser')
 primary = {
-    'https://t.me/+358466170891',
+    'https://t.me/eglitisonline_contact_bot',
     'https://wa.me/358466170891',
     'https://max.ru/u/f9LHodD0cOJ57eetEyicu--mDK2NszjKeeEYBEHcl7uGccaQ9irTHc0Jg6k',
 }
